@@ -1,4 +1,32 @@
-import { prisma } from '~/data/index';
+import jwt from 'jsonwebtoken';
+import { prisma } from '~/data';
+
+export const login = async ctx => {
+  try {
+    const { email, password } = ctx.request.body;
+
+    const user = await prisma.user.findFirst({
+      where: {
+        email,
+        password,
+      },
+    });
+
+    if (!user) {
+      ctx.status = 404;
+      return;
+    }
+
+    const token = jwt.sign({ sub: user.id }, process.env.JWT_SECRET);
+
+    ctx.body = { user, token };
+
+    ctx.status = 200;
+  } catch (err) {
+    ctx.status = 500;
+    ctx.body = 'Ops... algo deu errado. Tente novamente mais tarde.';
+  }
+};
 
 export const list = async ctx => {
   try {

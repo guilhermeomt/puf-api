@@ -1,8 +1,10 @@
 import Router from '@koa/router';
 
-import * as users from './modules/users/index';
+import * as users from './modules/users';
 
 export const router = new Router();
+
+router.post('/login', users.login);
 
 router.get('/users', users.list);
 router.post('/users', users.create);
