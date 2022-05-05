@@ -4,7 +4,7 @@ import * as users from './modules/users';
 
 export const router = new Router();
 
-router.post('/login', users.login);
+router.get('/login', users.login);
 
 router.get('/users', users.list);
 router.post('/users', users.create);
