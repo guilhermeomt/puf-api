@@ -7,21 +7,22 @@ export const login = async ctx => {
   try {
     const { email, password } = ctx.request.body;
 
-    const user = await prisma.user.findFirst({
+    const user = await prisma.user.findUnique({
       where: {
         email,
-        password,
       },
     });
 
-    if (!user) {
+    const passwordEqual = await bcrypt.compare(password, user.password);
+
+    if (!user || !passwordEqual) {
       ctx.status = 404;
       return;
     }
 
     const token = jwt.sign({ sub: user.id }, process.env.JWT_SECRET);
 
-    ctx.body = { user, token };
+    ctx.body = { user: { ...user, password: undefined }, token };
 
     ctx.status = 200;
   } catch (err) {
