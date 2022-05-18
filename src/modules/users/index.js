@@ -2,19 +2,15 @@ import jwt from 'jsonwebtoken';
 import bcrypt from 'bcrypt';
 
 import { prisma } from '~/data';
+import { decodeBasicToken } from './service';
+import { ApplicationError } from '~/utils/applicationError';
 
 export const login = async ctx => {
-  const [type, credentials] = ctx.request.headers.authorization.split(' ');
-
-  if (type !== 'Basic') {
-    ctx.status = 400;
-    return;
-  }
-
-  const decodedCredentials = Buffer.from(credentials, 'base64').toString();
-  const [email, password] = decodedCredentials.split(':');
-
   try {
+    const [email, password] = decodeBasicToken(
+      ctx.request.headers.authorization
+    );
+
     const user = await prisma.user.findUnique({
       where: {
         email,
@@ -34,8 +30,14 @@ export const login = async ctx => {
 
     ctx.status = 200;
   } catch (err) {
-    ctx.status = 500;
-    ctx.body = 'Ops... algo deu errado. Tente novamente mais tarde.';
+    console.log(err);
+    if (err instanceof ApplicationError) {
+      ctx.status = err.statusCode;
+      ctx.body = { message: err.message };
+    } else {
+      ctx.status = 500;
+      ctx.body = 'Ops... algo deu errado. Tente novamente mais tarde.';
+    }
   }
 };
 
@@ -77,7 +79,7 @@ export const update = async ctx => {
       },
       data: { name, email },
     });
-    ctx.body = user;
+    ctx.body = { ...user, password: undefined };
   } catch (err) {
     console.log(err);
     ctx.status = 500;
@@ -92,7 +94,7 @@ export const remove = async ctx => {
         id: ctx.params.id,
       },
     });
-    ctx.body = user;
+    ctx.body = { ...user, password: undefined };
   } catch (err) {
     console.log(err);
     ctx.status = 500;
