@@ -15,6 +15,7 @@
     "format": "yarn fix:format 'src/**/*.(js|ts|json|md)'",
     "lint": "yarn fix:lint src/**/*.{js,ts,md,json}",
     "test": "jest",
+    "db:migrate": "yarn prisma migrate dev",
     "prepare": "husky install"
   },
   "commitlint": {
