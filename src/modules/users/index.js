@@ -17,6 +17,11 @@ export const login = async ctx => {
       },
     });
 
+    if (!user) {
+      ctx.status = 404;
+      return;
+    }
+
     const passwordEqual = await bcrypt.compare(password, user.password);
 
     if (!user || !passwordEqual) {
